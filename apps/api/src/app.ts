@@ -4,7 +4,12 @@ import { Portfolio, ServiceError, Weather, WeatherQuery } from "./schemas";
 
 export const app = createApp({
   openapi: { info: { title: "Daloy + Better Auth Example API", version: "1.0.0" } },
-  docs: true, // auto-mounts GET /docs, /openapi.json, /openapi.yaml
+  // auto-mounts GET /docs, /openapi.json, /openapi.yaml. Swagger UI is fully
+  // self-contained (loaded from jsDelivr, which daloy's docs CSP allows) and
+  // never phones home, so /docs renders cleanly under the strict default CSP.
+  // (The default Scalar UI is nicer but its bundle fetches fonts/registry from
+  // scalar.com, which the secure-by-default CSP correctly blocks.)
+  docs: { ui: "swagger" },
 });
 
 // daloy middleware (a beforeHandle hook): verify the better-auth session and
