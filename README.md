@@ -72,9 +72,13 @@ Requires [Bun](https://bun.sh).
 
 ```bash
 bun install
-bun run setup   # generate OpenAPI + typed SDK, run migrations, seed test user
+bun run setup   # copies .env, generates OpenAPI + typed SDK, runs migrations, seeds the test user
 bun run dev     # starts API (:3000) and web (:5173) together
 ```
+
+> `bun run setup` must run before `dev`/`build`: it creates `apps/api/.env`, the
+> generated SDK (`apps/web/src/client`), and the SQLite DB — all git-ignored. No
+> manual env setup needed for local dev.
 
 Open http://localhost:5173 and log in with the seeded user:
 

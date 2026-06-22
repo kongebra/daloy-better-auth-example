@@ -13,11 +13,11 @@
   "dependencies": {
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "better-auth": "latest",
-    "@hey-api/client-fetch": "latest"
+    "better-auth": "^1.6.20",
+    "@hey-api/client-fetch": "^0.13.1"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "latest",
+    "@hey-api/openapi-ts": "^0.99.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",

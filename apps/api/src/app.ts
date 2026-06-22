@@ -47,11 +47,16 @@ app.route({
     const lat = ctx.query.lat ?? 35.6595; // Shibuya Crossing, Tokyo
     const lon = ctx.query.lon ?? 139.7005;
 
-    const wxRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-        `&current=temperature_2m,weather_code,wind_speed_10m`,
-    );
-    const wx = (wxRes.ok ? await wxRes.json() : null) as any;
+    let wx: any = null;
+    try {
+      const wxRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+          `&current=temperature_2m,weather_code,wind_speed_10m`,
+      );
+      wx = wxRes.ok ? await wxRes.json() : null;
+    } catch {
+      wx = null; // network error or non-JSON body
+    }
     if (!wx?.current) {
       return { status: 502, body: { error: "Weather service unavailable" } };
     }
@@ -94,7 +99,7 @@ app.route({
   hooks: { beforeHandle: requireAuth },
   responses: {
     200: { description: "Most active stocks for the logged-in user", body: Portfolio },
-    401: { description: "Unauthorized" },
+    401: { description: "Unauthorized", body: ServiceError },
     502: { description: "Upstream market-data service unavailable", body: ServiceError },
   },
   handler: async (ctx) => {
@@ -115,7 +120,7 @@ app.route({
     const mostActive = quotes.slice(0, 5).map((q: any) => ({
       symbol: q.symbol,
       name: q.shortName ?? q.symbol,
-      price: q.regularMarketPrice ?? 0,
+      price: Number((q.regularMarketPrice ?? 0).toFixed(2)),
       changePercent: Number((q.regularMarketChangePercent ?? 0).toFixed(2)),
     }));
 

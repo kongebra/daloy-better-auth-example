@@ -7,7 +7,11 @@ import { Database } from "bun:sqlite";
 export const authOptions = {
   database: new Database(process.env.AUTH_DB ?? "auth.sqlite"),
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  secret: process.env.BETTER_AUTH_SECRET ?? "dev-only-secret-change-me-0123456789",
+  // No inline fallback on purpose: with the secret read straight from the env,
+  // better-auth's built-in guard throws if it's missing in production instead of
+  // silently signing sessions with a committed key. `bun run setup` copies
+  // .env.example -> .env so local dev still works with zero config.
+  secret: process.env.BETTER_AUTH_SECRET,
   // The Vite dev server (5173) sends Origin; the backend runs on 3000.
   trustedOrigins: ["http://localhost:5173", "http://localhost:3000"],
   emailAndPassword: {

@@ -4,6 +4,6 @@
   "workspaces": ["apps/*"],
   "scripts": {
     "dev": "bun run --filter '*' dev",
-    "setup": "bun run --filter api gen && bun run --filter web gen && bun run --filter api seed"
+    "setup": "cp -n apps/api/.env.example apps/api/.env; bun run --filter api gen && bun run --filter web gen && bun run --filter api seed"
   }
 }

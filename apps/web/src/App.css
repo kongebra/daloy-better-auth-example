@@ -65,3 +65,5 @@ footer a { color: #6cf; }
 
 td.up { color: #6f9; }
 td.down { color: #f77; }
+
+.table-wrap { overflow-x: auto; }

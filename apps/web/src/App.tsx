@@ -28,13 +28,10 @@ export default function App() {
     );
   }, []);
 
-  // Private endpoint: fetch when we have a session, reset on logout.
+  // Private endpoint: fetch when we have a session. When logged out the card
+  // shows the login form instead, so stale stock state is never rendered.
   useEffect(() => {
-    if (!session) {
-      setStock(undefined);
-      setStockStatus(undefined);
-      return;
-    }
+    if (!session) return;
     getStock().then((r) => {
       if (r.data) setStock(r.data);
       else if (r.response?.status === 401)
@@ -84,6 +81,7 @@ export default function App() {
               <button onClick={() => authClient.signOut()}>Sign out</button>
             </div>
             {stock ? (
+              <div className="table-wrap">
               <table>
                 <thead>
                   <tr><th>Symbol</th><th>Name</th><th>Price ($)</th><th>Change</th></tr>
@@ -101,6 +99,7 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+              </div>
             ) : (
               <p className="muted">{stockStatus ?? "Loading…"}</p>
             )}
@@ -137,11 +136,11 @@ function LoginForm() {
       <p className="muted">Sign in to see the most active stocks (the seeded test user is prefilled).</p>
       <label>
         Email
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+        <input name="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
       </label>
       <label>
         Password
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
+        <input name="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
       </label>
       {error && <p className="error">{error}</p>}
       <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
