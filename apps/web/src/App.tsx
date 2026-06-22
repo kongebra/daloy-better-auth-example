@@ -9,12 +9,21 @@ export default function App() {
   const [stock, setStock] = useState<GetStockResponse>();
   const [stockStatus, setStockStatus] = useState<string>();
 
-  // Public-endepunkt: hent alltid.
+  // Public endpoint: ask for the user's location; the backend falls back to
+  // Tokyo if we can't provide lat/lon (denied or unavailable).
   useEffect(() => {
-    getWeather().then((r) => setWeather(r.data));
+    const load = (query?: { lat: number; lon: number }) =>
+      getWeather({ query }).then((r) => setWeather(r.data));
+
+    if (!navigator.geolocation) return void load();
+    navigator.geolocation.getCurrentPosition(
+      (pos) => load({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      () => load(), // denied/unavailable -> backend fallback (Shibuya)
+      { timeout: 8000 }, // don't hang forever waiting for a permission decision
+    );
   }, []);
 
-  // Private-endepunkt: hent når vi har en session, nullstill når vi logger ut.
+  // Private endpoint: fetch when we have a session, reset on logout.
   useEffect(() => {
     if (!session) {
       setStock(undefined);
@@ -23,7 +32,7 @@ export default function App() {
     }
     getStock().then((r) => {
       if (r.data) setStock(r.data);
-      else setStockStatus(`Avvist (${r.response?.status ?? 401})`);
+      else setStockStatus(`Rejected (${r.response?.status ?? 401})`);
     });
   }, [session]);
 
@@ -32,53 +41,59 @@ export default function App() {
       <header>
         <h1>daloy + better-auth</h1>
         <p className="sub">
-          Vite + React · Bun-backend (daloy API + better-auth) · typet SDK fra OpenAPI
+          Vite + React · Bun backend (daloy API + better-auth) · typed SDK from OpenAPI
         </p>
       </header>
 
       <section className="card">
         <div className="card-head">
-          <h2>🌤️ Vær</h2>
+          <h2>🌤️ Weather</h2>
           <span className="badge open">public</span>
         </div>
         {weather ? (
           <p className="data">
-            {weather.city}: <strong>{weather.tempC}°C</strong>, {weather.condition}
+            {weather.place}: <strong>{weather.tempC}°C</strong>, {weather.condition}{" "}
+            <span className="muted">· wind {weather.windKmh} km/h</span>
           </p>
         ) : (
-          <p className="muted">Laster…</p>
+          <p className="muted">Loading…</p>
         )}
       </section>
 
       <section className="card">
         <div className="card-head">
-          <h2>📈 Aksjer</h2>
+          <h2>📈 Most active</h2>
           <span className="badge locked">private</span>
         </div>
 
         {isPending ? (
-          <p className="muted">Sjekker session…</p>
+          <p className="muted">Checking session…</p>
         ) : session ? (
           <>
             <div className="row">
-              <span className="muted">Logget inn som {session.user.email}</span>
-              <button onClick={() => authClient.signOut()}>Logg ut</button>
+              <span className="muted">Signed in as {session.user.email}</span>
+              <button onClick={() => authClient.signOut()}>Sign out</button>
             </div>
             {stock ? (
               <table>
                 <thead>
-                  <tr><th>Symbol</th><th>Antall</th><th>Kurs</th></tr>
+                  <tr><th>Symbol</th><th>Name</th><th>Price ($)</th><th>Change</th></tr>
                 </thead>
                 <tbody>
-                  {stock.positions.map((p) => (
+                  {stock.mostActive.map((p) => (
                     <tr key={p.symbol}>
-                      <td>{p.symbol}</td><td>{p.shares}</td><td>{p.price}</td>
+                      <td>{p.symbol}</td>
+                      <td>{p.name}</td>
+                      <td>{p.price}</td>
+                      <td className={p.changePercent >= 0 ? "up" : "down"}>
+                        {p.changePercent >= 0 ? "+" : ""}{p.changePercent}%
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <p className="muted">{stockStatus ?? "Laster…"}</p>
+              <p className="muted">{stockStatus ?? "Loading…"}</p>
             )}
           </>
         ) : (
@@ -87,7 +102,7 @@ export default function App() {
       </section>
 
       <footer className="muted">
-        Backend-docs: <a href="/docs" target="_blank" rel="noreferrer">/docs</a> (OpenAPI)
+        Backend docs: <a href="/docs" target="_blank" rel="noreferrer">/docs</a> (OpenAPI)
       </footer>
     </main>
   );
@@ -104,23 +119,23 @@ function LoginForm() {
     setBusy(true);
     setError(undefined);
     const { error } = await authClient.signIn.email({ email, password });
-    if (error) setError(error.message ?? "Innlogging feilet");
+    if (error) setError(error.message ?? "Sign in failed");
     setBusy(false);
   }
 
   return (
     <form onSubmit={onSubmit} className="login">
-      <p className="muted">Logg inn for å se aksjeporteføljen (seeded testbruker er forhåndsfylt).</p>
+      <p className="muted">Sign in to see the most active stocks (the seeded test user is prefilled).</p>
       <label>
-        E-post
+        Email
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
       </label>
       <label>
-        Passord
+        Password
         <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
       </label>
       {error && <p className="error">{error}</p>}
-      <button type="submit" disabled={busy}>{busy ? "Logger inn…" : "Logg inn"}</button>
+      <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
     </form>
   );
 }

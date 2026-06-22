@@ -1,8 +1,8 @@
 import { getMigrations } from "better-auth/db/migration";
 import { auth, authOptions } from "./auth";
 
-// Bygg better-auth-tabellene i SQLite-fila (idempotent), så seed én testbruker.
-// Eksempelet har bare innlogging — ingen signup i UI.
+// Build the better-auth tables in the SQLite file (idempotent), then seed one
+// test user. The example only has sign-in — no signup in the UI.
 const TEST_EMAIL = "test@example.com";
 const TEST_PASSWORD = "test1234";
 

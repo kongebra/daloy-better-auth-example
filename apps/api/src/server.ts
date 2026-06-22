@@ -1,9 +1,9 @@
 import { app } from "./app";
 import { auth } from "./auth";
 
-// Sømmen: én web-standard fetch-dispatcher. better-auth eier /api/auth/*,
-// daloy eier resten. Begge er fetch-native (auth.handler / app.fetch), så
-// ingen adapter-lim trengs — de møtes på Request -> Response.
+// The seam: one web-standard fetch dispatcher. better-auth owns /api/auth/*,
+// daloy owns the rest. Both are fetch-native (auth.handler / app.fetch), so no
+// adapter glue is needed — they meet at Request -> Response.
 const port = Number(process.env.PORT ?? 3000);
 
 Bun.serve({

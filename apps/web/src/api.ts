@@ -1,8 +1,8 @@
 import { client } from "./client/client.gen";
 
-// SDK-en peker default på http://localhost:3000 (fra OpenAPI servers). Vi vil
-// heller gå via Vite-proxyen (samme origin) så cookien sendes med — så vi
-// nuller baseUrl til relativ og inkluderer credentials.
+// The SDK defaults to http://localhost:3000 (from the OpenAPI servers). We'd
+// rather go through the Vite proxy (same origin) so the cookie is sent — so we
+// reset baseUrl to relative and include credentials.
 client.setConfig({ baseUrl: "", credentials: "include" });
 
 export { getWeather, getStock } from "./client";

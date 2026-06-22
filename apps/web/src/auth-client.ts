@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 
-// Kaller /api/auth/* på samme origin (proxyet til daloy-backenden).
+// Calls /api/auth/* on the same origin (proxied to the daloy backend).
 export const authClient = createAuthClient({
   baseURL: window.location.origin,
 });

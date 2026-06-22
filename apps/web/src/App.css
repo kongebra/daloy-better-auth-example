@@ -62,3 +62,6 @@ button:disabled { opacity: 0.6; cursor: default; }
 
 footer { font-size: 0.85rem; }
 footer a { color: #6cf; }
+
+td.up { color: #6f9; }
+td.down { color: #f77; }

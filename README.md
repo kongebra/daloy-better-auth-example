@@ -12,13 +12,15 @@ session.
 ## What it shows
 
 - A single Bun server hosting **both** better-auth (`/api/auth/*`) and a daloy API.
-- `GET /weather` — **public** fake weather data.
-- `GET /stock` — **private** fake stock portfolio, gated by a daloy `beforeHandle`
-  hook that calls `auth.api.getSession(...)`.
+- `GET /weather` — **public** real weather from [Open-Meteo](https://open-meteo.com)
+  for the user's location (the browser sends lat/lon; falls back to Shibuya, Tokyo).
+- `GET /stock` — **private** top-5 most active stocks from Yahoo Finance, gated by
+  a daloy `beforeHandle` hook that calls `auth.api.getSession(...)`.
 - Stateless sessions (better-auth `cookieCache`) — protected calls verify a
   signed cookie **without** hitting the database.
 - A typed frontend SDK **generated from daloy's OpenAPI contract** (Hey API).
-- A Vite + React UI: weather always visible, stock visible only when logged in.
+- A Vite + React UI: weather always visible, stocks visible only when logged in.
+- All data comes from **keyless** public APIs — no sign-ups, no secrets.
 
 ## The integration seam
 

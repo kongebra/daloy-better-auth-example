@@ -1,5 +1,5 @@
-// Typer ctx.state.user globalt (modul-augmentering av daloy sin AppState),
-// satt av requireAuth-hooken i app.ts.
+// Types ctx.state.user globally (module augmentation of daloy's AppState),
+// set by the requireAuth hook in app.ts.
 import "@daloyjs/core";
 
 declare module "@daloyjs/core" {
