@@ -15,9 +15,10 @@ export const authOptions = {
     requireEmailVerification: false, // no email sending in this example
   },
   session: {
-    // Stateless: the session lives in a signed/encrypted cookie, so getSession
-    // doesn't query the database on every protected call.
-    cookieCache: { enabled: true, maxAge: 7 * 24 * 60 * 60 },
+    // Stateless: the session lives in a short-lived signed cookie, so getSession
+    // can serve it without a DB query. Kept short (5 min) so a revoked/expired
+    // session isn't trusted from the cookie for long before it's revalidated.
+    cookieCache: { enabled: true, maxAge: 5 * 60 },
   },
 } satisfies BetterAuthOptions;
 

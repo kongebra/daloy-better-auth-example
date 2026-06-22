@@ -10,6 +10,9 @@ export default defineConfig({
       '/api': 'http://localhost:3000',     // better-auth: /api/auth/*
       '/weather': 'http://localhost:3000', // daloy public endpoint
       '/stock': 'http://localhost:3000',   // daloy private endpoint
+      '/docs': 'http://localhost:3000',    // daloy OpenAPI UI
+      '/openapi.json': 'http://localhost:3000',
+      '/openapi.yaml': 'http://localhost:3000',
     },
   },
 })

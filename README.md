@@ -91,9 +91,11 @@ apps/
   api/   daloy + better-auth backend
     src/auth.ts      better-auth config (bun:sqlite, stateless sessions)
     src/app.ts       daloy app: /weather (public) + /stock (private)
+    src/schemas.ts   shared Zod models for requests/responses
     src/server.ts    Bun.serve dispatcher (the seam)
     src/seed.ts      migrations + seed the test user
     src/openapi.ts   emit OpenAPI 3.1 spec for SDK generation
+    src/types.d.ts   types ctx.state.user (augments daloy's AppState)
   web/   Vite + React frontend
     src/auth-client.ts  better-auth React client
     src/api.ts          configures the generated SDK client

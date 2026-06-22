@@ -1,6 +1,6 @@
 import { createApp, type BaseContext } from "@daloyjs/core";
-import { z } from "zod";
 import { auth } from "./auth";
+import { Portfolio, ServiceError, Weather, WeatherQuery } from "./schemas";
 
 export const app = createApp({
   openapi: { info: { title: "Daloy + Better Auth Example API", version: "1.0.0" } },
@@ -38,31 +38,23 @@ app.route({
   operationId: "getWeather",
   tags: ["public"],
   summary: "Real weather for given coordinates (defaults to Shibuya, Tokyo)",
-  request: {
-    query: z.object({
-      lat: z.coerce.number().optional(),
-      lon: z.coerce.number().optional(),
-    }),
-  },
+  request: { query: WeatherQuery },
   responses: {
-    200: {
-      description: "Current weather",
-      body: z.object({
-        place: z.string(),
-        tempC: z.number(),
-        condition: z.string(),
-        windKmh: z.number(),
-      }),
-    },
+    200: { description: "Current weather", body: Weather },
+    502: { description: "Upstream weather service unavailable", body: ServiceError },
   },
   handler: async (ctx) => {
     const lat = ctx.query.lat ?? 35.6595; // Shibuya Crossing, Tokyo
     const lon = ctx.query.lon ?? 139.7005;
 
-    const wx = (await fetch(
+    const wxRes = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
         `&current=temperature_2m,weather_code,wind_speed_10m`,
-    ).then((r) => r.json())) as any;
+    );
+    const wx = (wxRes.ok ? await wxRes.json() : null) as any;
+    if (!wx?.current) {
+      return { status: 502, body: { error: "Weather service unavailable" } };
+    }
 
     // Place name is best-effort (BigDataCloud reverse-geocode, keyless, English).
     // If it fails we show the coordinates instead.
@@ -101,30 +93,25 @@ app.route({
   summary: "Top 5 most active stocks (Yahoo Finance) — requires a session",
   hooks: { beforeHandle: requireAuth },
   responses: {
-    200: {
-      description: "Most active stocks for the logged-in user",
-      body: z.object({
-        user: z.string(),
-        mostActive: z.array(
-          z.object({
-            symbol: z.string(),
-            name: z.string(),
-            price: z.number(),
-            changePercent: z.number(),
-          }),
-        ),
-      }),
-    },
+    200: { description: "Most active stocks for the logged-in user", body: Portfolio },
     401: { description: "Unauthorized" },
+    502: { description: "Upstream market-data service unavailable", body: ServiceError },
   },
   handler: async (ctx) => {
-    const res = (await fetch(
+    const res = await fetch(
       "https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved" +
         "?scrIds=most_actives&count=5",
       { headers: { "User-Agent": "Mozilla/5.0" } },
-    ).then((r) => r.json())) as any;
+    );
+    const data = (res.ok ? await res.json() : null) as any;
+    const quotes = data?.finance?.result?.[0]?.quotes ?? [];
 
-    const quotes = res.finance?.result?.[0]?.quotes ?? [];
+    // Yahoo's keyless endpoint can return 401/429 (crumb required) — surface
+    // that instead of a misleading empty table.
+    if (!res.ok || quotes.length === 0) {
+      return { status: 502, body: { error: "Market data unavailable" } };
+    }
+
     const mostActive = quotes.slice(0, 5).map((q: any) => ({
       symbol: q.symbol,
       name: q.shortName ?? q.symbol,

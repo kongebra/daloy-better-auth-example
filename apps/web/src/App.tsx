@@ -6,6 +6,7 @@ import "./App.css";
 export default function App() {
   const { data: session, isPending } = authClient.useSession();
   const [weather, setWeather] = useState<GetWeatherResponse>();
+  const [weatherError, setWeatherError] = useState<string>();
   const [stock, setStock] = useState<GetStockResponse>();
   const [stockStatus, setStockStatus] = useState<string>();
 
@@ -13,7 +14,11 @@ export default function App() {
   // Tokyo if we can't provide lat/lon (denied or unavailable).
   useEffect(() => {
     const load = (query?: { lat: number; lon: number }) =>
-      getWeather({ query }).then((r) => setWeather(r.data));
+      getWeather({ query })
+        .then((r) =>
+          r.data ? setWeather(r.data) : setWeatherError("Couldn't load weather right now."),
+        )
+        .catch(() => setWeatherError("Couldn't reach the weather service."));
 
     if (!navigator.geolocation) return void load();
     navigator.geolocation.getCurrentPosition(
@@ -32,7 +37,9 @@ export default function App() {
     }
     getStock().then((r) => {
       if (r.data) setStock(r.data);
-      else setStockStatus(`Rejected (${r.response?.status ?? 401})`);
+      else if (r.response?.status === 401)
+        setStockStatus("Your session was rejected — try signing in again.");
+      else setStockStatus("Market data is unavailable right now.");
     });
   }, [session]);
 
@@ -55,6 +62,8 @@ export default function App() {
             {weather.place}: <strong>{weather.tempC}°C</strong>, {weather.condition}{" "}
             <span className="muted">· wind {weather.windKmh} km/h</span>
           </p>
+        ) : weatherError ? (
+          <p className="error">{weatherError}</p>
         ) : (
           <p className="muted">Loading…</p>
         )}
