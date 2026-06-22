@@ -1,0 +1,10 @@
+:root {
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+  color: #e6e6e6;
+  background: #0e0e0e;
+}
+
+body { margin: 0; }
+h1, h2 { font-weight: 600; }
+a { color: #6cf; }

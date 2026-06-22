@@ -1,0 +1,9 @@
+{
+  "name": "daloy-better-auth-example",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "setup": "bun run --filter api gen && bun run --filter web gen && bun run --filter api seed"
+  }
+}
